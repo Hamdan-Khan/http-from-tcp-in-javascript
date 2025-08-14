@@ -28,32 +28,22 @@ function getLines(stream) {
 }
 
 async function main() {
-  const stream = fs.createReadStream("messages.txt", {
-    highWaterMark: 8,
-  });
-  const server = net.createServer((c) => {
-    c.on("connectionAttempt", () => {
-      console.log("----- Connection made!!!!");
+  const server = net.createServer((socket) => {
+    console.log("connection opened");
+
+    const emitter = getLines(socket);
+
+    emitter.on("line", (args) => {
+      console.log(args);
     });
-    c.on("end", () => {
-      console.log("client disconnected");
+
+    socket.on("end", () => {
+      console.log("connection closed");
     });
-    c.write("yoooo\r\n");
-    c.pipe(c);
   });
 
-  server.listen(8124, () => {
+  server.listen(42069, () => {
     console.log("server bound");
-  });
-
-  const emitter = getLines(stream);
-
-  emitter.on("line", (args) => {
-    console.log(args);
-  });
-
-  emitter.on("end", (args) => {
-    console.log(args);
   });
 }
 
