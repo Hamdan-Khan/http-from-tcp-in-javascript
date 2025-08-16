@@ -1,10 +1,10 @@
-const dgram = require("dgram");
-const readline = require("readline");
+import { createSocket } from "dgram";
+import { createInterface } from "readline";
 
-const server = dgram.createSocket("udp4");
+const server = createSocket("udp4");
 server.connect(42069, "127.0.0.1");
 
-const rl = readline.createInterface({
+const rl = createInterface({
   input: process.stdin,
   output: process.stdout,
 });
@@ -13,6 +13,7 @@ rl.setPrompt("> ");
 rl.prompt();
 
 rl.on("line", (line) => {
+  // udp sends the packet regardless of the listener's connection
   server.send(Buffer.from(line));
   rl.prompt();
 });

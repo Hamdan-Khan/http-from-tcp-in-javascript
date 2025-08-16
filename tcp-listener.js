@@ -1,10 +1,11 @@
-const EventEmitter = require("events");
-const net = require("net");
+import EventEmitter from "events";
+import { createServer } from "net";
 
 function getLines(stream) {
   const emitter = new EventEmitter();
 
   let currentLine = "";
+
   stream.on("data", (buffer) => {
     const parts = buffer.toString().split("\n");
 
@@ -27,7 +28,7 @@ function getLines(stream) {
 }
 
 async function main() {
-  const server = net.createServer((socket) => {
+  const server = createServer((socket) => {
     console.log("connection opened");
 
     const emitter = getLines(socket);
