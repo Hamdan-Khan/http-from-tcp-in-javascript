@@ -26,9 +26,10 @@ function getLines(stream) {
     currentLine += parts[0];
 
     if (parts.length > 1) {
-      emitter.emit("line", currentLine);
-
-      currentLine = parts[1];
+      for (let i = 1; i < parts.length; i++) {
+        emitter.emit("line", currentLine);
+        currentLine = parts[i];
+      }
     }
   });
 
