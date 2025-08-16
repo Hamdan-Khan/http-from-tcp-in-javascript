@@ -1,6 +1,20 @@
+/**
+ * demonstration of connection-oriented property of tcp
+ * for establishing a tcp connection to this listener node:
+ * > telnet localhost 42069
+ *
+ * when the listener node (this node) is closed, the sender node (telnet)
+ * is terminated as well, i.e. connection is necessary for sending packets
+ */
+
 import EventEmitter from "events";
 import { createServer } from "net";
 
+/**
+ * converts stream of bytes from the tcp sender into formatted lines
+ * emits a "line" event when a newline is found
+ * emits an "end" event when stream ends
+ */
 function getLines(stream) {
   const emitter = new EventEmitter();
 
@@ -28,6 +42,7 @@ function getLines(stream) {
 }
 
 async function main() {
+  // a tcp server, logging the received bytes
   const server = createServer((socket) => {
     console.log("connection opened");
 

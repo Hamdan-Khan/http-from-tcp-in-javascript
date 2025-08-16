@@ -1,9 +1,18 @@
+/**
+ * A udp sender to demonstrate the connection-less property of udp
+ * to listen for UDP Packets in powershell (with nmap):
+ * "C:\Program Files (x86)\Nmap\ncat.exe" -u -l 42069
+ *
+ * when the listener node (ncat) is closed, the packets can still be sent
+ * from this node, regardless of the listener's availability
+ */
 import { createSocket } from "dgram";
 import { createInterface } from "readline";
 
 const server = createSocket("udp4");
 server.connect(42069, "127.0.0.1");
 
+// to create an infinite stream of input from stdin
 const rl = createInterface({
   input: process.stdin,
   output: process.stdout,
@@ -12,12 +21,13 @@ const rl = createInterface({
 rl.setPrompt("> ");
 rl.prompt();
 
+// on every new line, send it to the associated udp listener
 rl.on("line", (line) => {
-  // udp sends the packet regardless of the listener's connection
   server.send(Buffer.from(line));
   rl.prompt();
 });
 
+// to close the node and udp sender
 rl.on("SIGINT", () => {
   console.log("\nClosing UDP sender...");
   server.disconnect();
@@ -30,6 +40,3 @@ rl.on("SIGINT", () => {
 //   console.log(buffer);
 //   server.send(buffer);
 // });
-
-// to listen for UDP Packets in powershell:
-// & "C:\Program Files (x86)\Nmap\ncat.exe" -u -l 42069
