@@ -1,35 +1,15 @@
 import { Readable } from "stream";
-
-interface HTTPRequest {
-  requestLine: RequestLine;
-}
-
-interface RequestLine {
-  httpVersion: string;
-  requestTarget: string;
-  method: string;
-}
+import { ASCII_RANGE, CRLF, HTTP_VERSION } from "./constants";
+import { RequestLine } from "./types";
 
 /**
- * New line
+ * Parses request-line (start-line) from a HTTP-message
+ *
+ * Returns null (for now) if there's an error
+ *
+ * @param message HTTP message in form of string
+ * @returns `RequestLine | null`
  */
-const CRLF = "\r\n" as const;
-
-/**
- * ASCII code ranges for capital and lower case letters
- */
-const ASCII_RANGE = {
-  capitalStart: 65,
-  capitalEnd: 90,
-  lowerStart: 97,
-  lowerEnd: 122,
-} as const;
-
-/**
- * HTTP version
- */
-const HTTP_VERSION = "1.1" as const;
-
 function parseRequestLine(message: string): null | RequestLine {
   const newLineIndex = message.search(CRLF);
 
