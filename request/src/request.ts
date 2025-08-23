@@ -28,7 +28,7 @@ const ASCII_RANGE = {
 /**
  * HTTP version
  */
-const HTTP_VERSION = "HTTP/1.1" as const;
+const HTTP_VERSION = "1.1" as const;
 
 function parseRequestLine(message: string): null | RequestLine {
   const newLineIndex = message.search(CRLF);
@@ -43,13 +43,21 @@ function parseRequestLine(message: string): null | RequestLine {
   // request line parts (method, target, http-ver) separated by spaces
   const parts = candidate.split(" ");
 
+  // must be 3 parts
   if (parts.length !== 3) {
     return null;
   }
 
+  // must be non empty parts (.split also considers empty strings)
+  for (const part of parts) {
+    if (part === "") {
+      return null;
+    }
+  }
+
   const method = parts[0];
   const requestTarget = parts[1];
-  const httpVersion = parts[2];
+  const httpVersion = parts[2].replace("HTTP/", "");
 
   // to validate the request line parts
   // method should be upper-case
@@ -73,10 +81,22 @@ function parseRequestLine(message: string): null | RequestLine {
   };
 }
 
-export function RequestFromReader(stream: Readable): RequestLine | null {
-  let requestLine = null;
-  stream.on("data", (chunk) => {
-    requestLine = parseRequestLine(chunk);
+export function RequestFromReader(
+  stream: Readable,
+): Promise<RequestLine | null> {
+  return new Promise((resolve) => {
+    let requestLine: RequestLine | null = null;
+
+    stream.on("data", (chunk) => {
+      requestLine = parseRequestLine(chunk.toString());
+    });
+
+    stream.on("end", () => {
+      resolve(requestLine);
+    });
+
+    stream.on("error", () => {
+      resolve(null);
+    });
   });
-  return requestLine;
 }
