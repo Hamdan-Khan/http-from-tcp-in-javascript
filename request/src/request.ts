@@ -1,5 +1,5 @@
 import { Readable } from "stream";
-import { ASCII_RANGE, CRLF, HTTP_VERSION } from "./constants";
+import { ASCII_RANGE, CRLF } from "./constants";
 import { RequestLine } from "./types";
 
 /**
@@ -49,8 +49,11 @@ function parseRequestLine(message: string): null | RequestLine {
       return null;
     }
   }
-  // http version should be 1.1
-  if (httpVersion !== HTTP_VERSION) {
+  // http version is in format: [major.minor]
+  const versions = httpVersion.split(".");
+  const isValidVersion =
+    versions.length === 2 && versions.every((v) => !isNaN(Number(v)));
+  if (!isValidVersion) {
     return null;
   }
 

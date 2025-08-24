@@ -13,9 +13,9 @@ describe("Request Line Parser Tests", () => {
     expect(r).toHaveProperty("method");
     expect(r).toHaveProperty("requestTarget");
     expect(r).toHaveProperty("httpVersion");
-    expect(r.method).toBe("GET");
-    expect(r.requestTarget).toBe("/");
-    expect(r.httpVersion).toBe("1.1");
+    expect(r?.method).toBe("GET");
+    expect(r?.requestTarget).toBe("/");
+    expect(r?.httpVersion).toBe("1.1");
   });
 
   test("Good Request line with path", async () => {
@@ -24,9 +24,9 @@ describe("Request Line Parser Tests", () => {
     );
 
     expect(r).not.toBeNull();
-    expect(r.method).toBe("GET");
-    expect(r.requestTarget).toBe("/users/123");
-    expect(r.httpVersion).toBe("1.1");
+    expect(r?.method).toBe("GET");
+    expect(r?.requestTarget).toBe("/users/123");
+    expect(r?.httpVersion).toBe("1.1");
   });
 
   test("Good Request line with complex path", async () => {
@@ -37,9 +37,9 @@ describe("Request Line Parser Tests", () => {
     );
 
     expect(r).not.toBeNull();
-    expect(r.method).toBe("GET");
-    expect(r.requestTarget).toBe("/api/v1/users?id=123&name=john");
-    expect(r.httpVersion).toBe("1.1");
+    expect(r?.method).toBe("GET");
+    expect(r?.requestTarget).toBe("/api/v1/users?id=123&name=john");
+    expect(r?.httpVersion).toBe("1.1");
   });
 
   test("Good POST Request with path", async () => {
@@ -50,9 +50,9 @@ describe("Request Line Parser Tests", () => {
     );
 
     expect(r).not.toBeNull();
-    expect(r.method).toBe("POST");
-    expect(r.requestTarget).toBe("/api/users");
-    expect(r.httpVersion).toBe("1.1");
+    expect(r?.method).toBe("POST");
+    expect(r?.requestTarget).toBe("/api/users");
+    expect(r?.httpVersion).toBe("1.1");
   });
 
   test("Good PUT Request with path", async () => {
@@ -61,9 +61,9 @@ describe("Request Line Parser Tests", () => {
     );
 
     expect(r).not.toBeNull();
-    expect(r.method).toBe("PUT");
-    expect(r.requestTarget).toBe("/users/456");
-    expect(r.httpVersion).toBe("1.1");
+    expect(r?.method).toBe("PUT");
+    expect(r?.requestTarget).toBe("/users/456");
+    expect(r?.httpVersion).toBe("1.1");
   });
 
   test("Good DELETE Request with path", async () => {
@@ -74,9 +74,9 @@ describe("Request Line Parser Tests", () => {
     );
 
     expect(r).not.toBeNull();
-    expect(r.method).toBe("DELETE");
-    expect(r.requestTarget).toBe("/posts/789");
-    expect(r.httpVersion).toBe("1.1");
+    expect(r?.method).toBe("DELETE");
+    expect(r?.requestTarget).toBe("/posts/789");
+    expect(r?.httpVersion).toBe("1.1");
   });
 
   test("Invalid number of parts in request line - too few", async () => {
@@ -140,7 +140,7 @@ describe("Request Line Parser Tests", () => {
       Readable.from("GET / HTTP/1.0\r\nHost: localhost\r\n\r\n"),
     );
 
-    expect(r).toBeNull();
+    expect(r?.httpVersion).toBe("1.0");
   });
 
   test("Invalid version in Request line - HTTP/2.0", async () => {
@@ -148,7 +148,7 @@ describe("Request Line Parser Tests", () => {
       Readable.from("GET / HTTP/2.0\r\nHost: localhost\r\n\r\n"),
     );
 
-    expect(r).toBeNull();
+    expect(r?.httpVersion).toBe("2.0");
   });
 
   test("Invalid version in Request line - malformed version", async () => {
