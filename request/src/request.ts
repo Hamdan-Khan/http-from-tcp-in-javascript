@@ -1,7 +1,8 @@
 import { Readable } from "stream";
 import { HTTPRequest } from "./classes";
 import { ASCII_RANGE, CRLF } from "./constants";
-import { RequestLine } from "./types";
+import { ParserState, RequestLine } from "./types";
+import { ChunkReader } from "./utils";
 
 /**
  * Parses request-line (start-line) from a HTTP-message
@@ -18,6 +19,7 @@ export function parseRequestLine(
 
   // no newline found
   if (newLineIndex === -1) {
+    console.error("parseRequestLine: no newline found");
     return 0;
   }
 
@@ -28,12 +30,16 @@ export function parseRequestLine(
 
   // must be 3 parts
   if (parts.length !== 3) {
+    console.error("parseRequestLine: invalid start-line (must be 3 parts)");
     return null;
   }
 
   // must be non empty parts (.split also considers empty strings)
   for (const part of parts) {
     if (part === "") {
+      console.error(
+        "parseRequestLine: invalid start-line (missing / empty parts)",
+      );
       return null;
     }
   }
@@ -49,6 +55,7 @@ export function parseRequestLine(
       method.charCodeAt(i) < ASCII_RANGE.capitalStart ||
       method.charCodeAt(i) > ASCII_RANGE.capitalEnd
     ) {
+      console.error("parseRequestLine: invalid start-line (invalid method)");
       return null;
     }
   }
@@ -57,6 +64,9 @@ export function parseRequestLine(
   const isValidVersion =
     versions.length === 2 && versions.every((v) => !isNaN(Number(v)));
   if (!isValidVersion) {
+    console.error(
+      "parseRequestLine: invalid start-line (invalid http version)",
+    );
     return null;
   }
 
@@ -70,22 +80,42 @@ export function parseRequestLine(
   };
 }
 
+/**
+ * To form a parsed request object from a readable source
+ *
+ * @param reader source to read data from: readable stream
+ * @returns resolvable Parsed request line / null if an error is occured
+ */
 export function RequestFromReader(
-  stream: Readable,
+  reader: Readable | ChunkReader,
 ): Promise<RequestLine | null> {
   return new Promise((resolve) => {
     const httpRequest = new HTTPRequest();
 
-    stream.on("data", (chunk) => {
-      httpRequest.parse(chunk);
-    });
+    if (reader instanceof ChunkReader) {
+      let buffer = "";
+      let chunk = reader.read();
 
-    stream.on("end", () => {
+      // chunkReader returns 0 when all the data is read
+      // parser state becomes DONE when the request-line is succesfully parsed
+      while (chunk !== 0 && httpRequest.state !== ParserState.DONE) {
+        buffer = buffer + chunk;
+        httpRequest.parse(buffer as string);
+        chunk = reader.read();
+      }
       resolve(httpRequest.requestLine);
-    });
+    } else {
+      reader.on("data", (chunk) => {
+        httpRequest.parse(chunk);
+      });
 
-    stream.on("error", () => {
-      resolve(null);
-    });
+      reader.on("end", () => {
+        resolve(httpRequest.requestLine);
+      });
+
+      reader.on("error", () => {
+        resolve(null);
+      });
+    }
   });
 }

@@ -1,3 +1,6 @@
+/**
+ * Reads data in chunks to simulate data arriving as part of a stream
+ */
 export class ChunkReader {
   data: string;
   numBytesPerRead: number;
@@ -8,10 +11,11 @@ export class ChunkReader {
   }
 
   /**
-   * returns a chunk of data based on the `numBytesPerRead` provided
+   * Returns a chunk of string based on the `numBytesPerRead` provided.
+   * Returns `0` if the whole string is read
    * @returns chunk
    */
-  public read() {
+  public read(): string | 0 {
     if (this.pos >= this.data.length) {
       return 0;
     }

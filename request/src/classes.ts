@@ -1,9 +1,13 @@
 import { parseRequestLine } from "./request";
 import { HTTPRequestInterface, ParserState, RequestLine } from "./types";
 
+/**
+ * Parse HTTP Requests using `.parse()` method
+ */
 export class HTTPRequest implements HTTPRequestInterface {
   requestLine: RequestLine | null;
   state: ParserState;
+
   constructor() {
     this.requestLine = null;
     this.state = ParserState.INITIALIZED;
@@ -23,7 +27,6 @@ export class HTTPRequest implements HTTPRequestInterface {
       const parsed = parseRequestLine(slice);
       // error case
       if (parsed === null) {
-        console.error("parse error: encountered while parsing request line");
         return null;
       }
 
