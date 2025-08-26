@@ -19,7 +19,6 @@ export function parseRequestLine(
 
   // no newline found
   if (newLineIndex === -1) {
-    console.error("parseRequestLine: no newline found");
     return 0;
   }
 
