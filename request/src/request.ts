@@ -1,4 +1,5 @@
 import { Readable } from "stream";
+import { HTTPRequest } from "./classes";
 import { ASCII_RANGE, CRLF } from "./constants";
 import { RequestLine } from "./types";
 
@@ -10,12 +11,14 @@ import { RequestLine } from "./types";
  * @param message HTTP message in form of string
  * @returns `RequestLine | null`
  */
-function parseRequestLine(message: string): null | RequestLine {
+export function parseRequestLine(
+  message: string,
+): null | { requestLine: RequestLine; bytesParsed: number } | 0 {
   const newLineIndex = message.search(CRLF);
 
   // no newline found
   if (newLineIndex === -1) {
-    return null;
+    return 0;
   }
 
   // possible start-line
@@ -58,9 +61,12 @@ function parseRequestLine(message: string): null | RequestLine {
   }
 
   return {
-    method,
-    requestTarget,
-    httpVersion,
+    requestLine: {
+      method,
+      requestTarget,
+      httpVersion,
+    },
+    bytesParsed: newLineIndex,
   };
 }
 
@@ -68,14 +74,14 @@ export function RequestFromReader(
   stream: Readable,
 ): Promise<RequestLine | null> {
   return new Promise((resolve) => {
-    let requestLine: RequestLine | null = null;
+    const httpRequest = new HTTPRequest();
 
     stream.on("data", (chunk) => {
-      requestLine = parseRequestLine(chunk.toString());
+      httpRequest.parse(chunk);
     });
 
     stream.on("end", () => {
-      resolve(requestLine);
+      resolve(httpRequest.requestLine);
     });
 
     stream.on("error", () => {
