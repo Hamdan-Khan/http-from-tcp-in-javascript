@@ -1,5 +1,9 @@
-import { parseRequestLine } from "./request";
-import { HTTPRequestInterface, ParserState, RequestLine } from "./types";
+import { parseRequestLine } from "./request.js";
+import {
+  ParserState,
+  type HTTPRequestInterface,
+  type RequestLine,
+} from "./types.js";
 
 /**
  * Parse HTTP Requests using `.parse()` method
@@ -18,13 +22,14 @@ export class HTTPRequest implements HTTPRequestInterface {
    * @param slice slice of message to be parsed
    * @returns  number of bytes parsed = `number` / incomplete data = `0` / error = `null`
    */
-  public parse(slice: string) {
+  public parse(slice: string | Buffer) {
+    const stringified = slice.toString();
     if (this.state === ParserState.DONE) {
       console.error("parse error: trying to read data in a done state");
       return null;
     }
     if (this.state === ParserState.INITIALIZED) {
-      const parsed = parseRequestLine(slice);
+      const parsed = parseRequestLine(stringified);
       // error case
       if (parsed === null) {
         return null;

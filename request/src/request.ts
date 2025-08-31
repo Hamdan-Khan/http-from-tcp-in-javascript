@@ -1,8 +1,9 @@
+import type { Socket } from "net";
 import { Readable } from "stream";
-import { HTTPRequest } from "./classes";
-import { ASCII_RANGE, CRLF } from "./constants";
-import { ParserState, RequestLine } from "./types";
-import { ChunkReader } from "./utils";
+import { HTTPRequest } from "./classes.js";
+import { ASCII_RANGE, CRLF } from "./constants.js";
+import { ParserState, type RequestLine } from "./types.js";
+import { ChunkReader } from "./utils.js";
 
 /**
  * Parses request-line (start-line) from a HTTP-message
@@ -45,10 +46,14 @@ export function parseRequestLine(
 
   const method = parts[0];
   const requestTarget = parts[1];
-  const httpVersion = parts[2].replace("HTTP/", "");
+  const httpVersion = parts[2]?.replace("HTTP/", "");
 
   // to validate the request line parts
   // method should be upper-case
+  if (!method) {
+    console.error("parseRequestLine: invalid start-line (invalid method)");
+    return null;
+  }
   for (let i = 0; i < method.length; i++) {
     if (
       method.charCodeAt(i) < ASCII_RANGE.capitalStart ||
@@ -58,13 +63,28 @@ export function parseRequestLine(
       return null;
     }
   }
+
   // http version is in format: [major.minor]
+  if (!httpVersion) {
+    console.error(
+      "parseRequestLine: invalid start-line (invalid http version)",
+    );
+    return null;
+  }
   const versions = httpVersion.split(".");
   const isValidVersion =
     versions.length === 2 && versions.every((v) => !isNaN(Number(v)));
   if (!isValidVersion) {
     console.error(
       "parseRequestLine: invalid start-line (invalid http version)",
+    );
+    return null;
+  }
+
+  // validate request target
+  if (!requestTarget) {
+    console.error(
+      "parseRequestLine: invalid start-line (invalid request target)",
     );
     return null;
   }
@@ -86,7 +106,7 @@ export function parseRequestLine(
  * @returns resolvable Parsed request line / null if an error is occured
  */
 export function RequestFromReader(
-  reader: Readable | ChunkReader,
+  reader: Readable | ChunkReader | Socket,
 ): Promise<RequestLine | null> {
   return new Promise((resolve) => {
     const httpRequest = new HTTPRequest();

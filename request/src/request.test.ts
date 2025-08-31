@@ -1,6 +1,6 @@
 const { Readable } = require("stream");
-import { RequestFromReader } from "./request";
-import { ChunkReader } from "./utils";
+import { RequestFromReader } from "./request.js";
+import { ChunkReader } from "./utils.js";
 
 describe("Request Line Parser Tests", () => {
   describe("Readable stream Tests", () => {

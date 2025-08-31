@@ -9,6 +9,7 @@
 
 import EventEmitter from "events";
 import { createServer } from "net";
+import { RequestFromReader } from "./request/dist/index.js";
 
 /**
  * converts stream of bytes from the tcp sender into formatted lines
@@ -42,7 +43,10 @@ function getLines(stream) {
   return emitter;
 }
 
-async function main() {
+/**
+ * connects to a tcp sender and logs the data on every new-line
+ */
+async function simpleTcpChannel() {
   // a tcp server, logging the received bytes
   const server = createServer((socket) => {
     console.log("connection opened");
@@ -61,6 +65,32 @@ async function main() {
   server.listen(42069, () => {
     console.log("server bound");
   });
+}
+
+/**
+ * a tcp listener, that parses the request-line when a request is received
+ * e.g. curl http://localhost:42069/its/over
+ */
+async function requestLineParser() {
+  const server = createServer(async (socket) => {
+    console.log("connection opened");
+
+    const emitter = await RequestFromReader(socket);
+
+    console.log("succesfully parsed: ", emitter);
+
+    socket.on("end", () => {
+      console.log("connection closed");
+    });
+  });
+
+  server.listen(42069, () => {
+    console.log("server bound");
+  });
+}
+
+function main() {
+  requestLineParser();
 }
 
 main();

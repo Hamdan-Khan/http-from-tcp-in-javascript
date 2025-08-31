@@ -1,5 +1,4 @@
-import { ChunkReader } from "src/utils.js";
-import { RequestFromReader } from "./src/request.js";
+import { ChunkReader } from "./src/utils.js";
 
 async function main() {
   const chunkReader = new ChunkReader(
@@ -7,8 +6,9 @@ async function main() {
     8,
   );
 
-  const startline = await RequestFromReader(chunkReader);
-  console.log(startline);
+  // const startline = await RequestFromReader(chunkReader);
 }
 
 main();
+
+export * from "./src/request.js";
