@@ -1,4 +1,4 @@
-const { Readable } = require("stream");
+import { Readable } from "stream";
 import { RequestFromReader } from "./request.js";
 import { ChunkReader } from "./utils.js";
 
