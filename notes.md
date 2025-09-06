@@ -11,6 +11,22 @@ CRLF
 [ message-body ]
 ```
 
+### Headers
+
+Headers / field-line must follow this format:
+
+```
+<optional-space> <field-name> <":"> <optional-space> <value> <optional-space>
+```
+
+Some valid examples:
+
+```
+'Host: localhost:42069'
+'    Host: localhost:42069'
+'Host:     localhost:42069'
+```
+
 ## HTTP/1.1 Semantics (RFC 9110)
 
 I'll probably forget all of this
