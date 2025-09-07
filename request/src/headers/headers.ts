@@ -4,6 +4,25 @@ export class Headers {
   public headers: undefined | Record<string, string>;
 
   /**
+   * For adding key value pair / or just value to an existing key-value pair in headers map
+   */
+  private setHeadersKeyValue(key: string, value: string) {
+    // it is possible to have multiple values for the same key e.g.
+    // content-type: text/html
+    // content-type: application/json
+    // this should be parsed as:
+    // content-type: text/html, application/json
+    if (this.headers) {
+      const existingValue = this.headers[key];
+      if (!existingValue) {
+        this.headers[key] = value;
+      } else {
+        this.headers[key] = existingValue + ", " + value;
+      }
+    }
+  }
+
+  /**
    * parses field-line / header data from the given string, one header at a time
    *
    * @param data string to derive the headers from
@@ -70,7 +89,7 @@ export class Headers {
       this.headers = {};
     }
 
-    this.headers[keyCandidate] = valueCandidate;
+    this.setHeadersKeyValue(keyCandidate, valueCandidate);
 
     // bytesParsed should also include the CRLF in its count.
     // endIndex is location of the first byte of CRLF "\r",
