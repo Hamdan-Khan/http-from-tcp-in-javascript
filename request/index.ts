@@ -8,9 +8,9 @@ async function main() {
   );
   // const startline = await RequestFromReader(chunkReader);
 
-  const testHeader = "Host: localhost:42069\r\n\r\n";
+  const testHeader = "Host(: localhost:42069\r\n\r\n";
   const headers = new Headers();
-  console.log(headers.parseHeaders(testHeader));
+  console.log(headers.parseHeaders(testHeader), headers.headers);
 }
 
 main();

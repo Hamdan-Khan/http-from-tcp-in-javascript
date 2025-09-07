@@ -1,4 +1,4 @@
-import { CRLF } from "../constants.js";
+import { ASCII_RANGE, CRLF } from "../constants.js";
 
 export class Headers {
   public headers: undefined | Record<string, string>;
@@ -10,7 +10,7 @@ export class Headers {
    */
   public parseHeaders(
     data: string,
-  ): { bytesParsed: number; done: boolean } | undefined {
+  ): { bytesParsed: number; done: boolean } | null {
     const endIndex = data.search(CRLF);
 
     if (endIndex === -1) {
@@ -42,6 +42,17 @@ export class Headers {
     let keyCandidate = headerCandidate.slice(0, colonIndex);
     let valueCandidate = headerCandidate.slice(colonIndex + 1);
 
+    const isKeyValid = this.validateFieldLineKey(keyCandidate);
+    if (!isKeyValid.result) {
+      console.error(
+        `ValidatedFieldLine: Invalid character encountered: "${isKeyValid.invalidChar}" in field-line: "${keyCandidate}"`,
+      );
+      return null;
+    }
+
+    // field-line (key) is case insensitive (e.g. Content-length = content-length)
+    keyCandidate = keyCandidate.toLowerCase();
+
     // field-name should not end with a white-space
     if (keyCandidate.endsWith(" ")) {
       return { done: false, bytesParsed: 0 };
@@ -50,6 +61,7 @@ export class Headers {
     keyCandidate = keyCandidate.trim();
     valueCandidate = valueCandidate.trim();
 
+    // fails condition # 3
     if (keyCandidate === "" || valueCandidate === "") {
       return { done: false, bytesParsed: 0 };
     }
@@ -66,5 +78,62 @@ export class Headers {
     // notice, we add 2 to endIndex instead of 1 here. The extra 1 is for
     // converting index-system (which starts from 0) to length-system (idk if that makes sense).
     return { done: false, bytesParsed: endIndex + 2 };
+  }
+
+  private validSpecialChars = new Set([
+    "!",
+    "#",
+    "$",
+    "%",
+    "&",
+    "'",
+    "*",
+    "+",
+    "-",
+    ".",
+    "^",
+    "_",
+    "`",
+    "|",
+    "~",
+  ]);
+
+  /**
+   * validates given field-line based on the conditions mentioned in RFC 5.6.2:
+   *
+   * - upper-case letters (A-Z)
+   * - lower-case letters (a-z)
+   * - digits (0-9)
+   * - special characters (mentioned in `validSpecialChars`)
+   * @param key to be validated
+   */
+  private validateFieldLineKey(key: string): {
+    result: boolean;
+    invalidChar?: string;
+  } {
+    for (let i = 0; i < key.length; i++) {
+      const curr = key[i]!;
+      const code = curr.charCodeAt(0); // ascii code
+
+      const isLowerCaseAlphabet =
+        code >= ASCII_RANGE.lowerStart && code <= ASCII_RANGE.lowerEnd;
+      const isUpperCaseAlphabet =
+        code >= ASCII_RANGE.capitalStart && code <= ASCII_RANGE.capitalEnd;
+      const isDigit =
+        code >= ASCII_RANGE.digitStart && code <= ASCII_RANGE.digitEnd;
+      const isValidSpecialCharacter = this.validSpecialChars.has(curr);
+
+      if (
+        !(
+          isLowerCaseAlphabet ||
+          isUpperCaseAlphabet ||
+          isDigit ||
+          isValidSpecialCharacter
+        )
+      ) {
+        return { result: false, invalidChar: curr };
+      }
+    }
+    return { result: true };
   }
 }
