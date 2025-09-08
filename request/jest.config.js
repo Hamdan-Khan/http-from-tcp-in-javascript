@@ -17,6 +17,7 @@ const config = {
   },
   cache: true,
   testPathIgnorePatterns: ["/node_modules/", "/dist/"],
+  verbose: true,
 };
 
 export default config;

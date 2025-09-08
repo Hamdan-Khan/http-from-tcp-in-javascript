@@ -32,6 +32,7 @@ export class HTTPHeaders {
   ): { bytesParsed: number; done: boolean } | null {
     const endIndex = data.search(CRLF);
 
+    // new-line not found yet
     if (endIndex === -1) {
       return { done: false, bytesParsed: 0 };
     }

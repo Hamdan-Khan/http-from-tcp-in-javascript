@@ -12,7 +12,8 @@ import {
 export class HTTPRequest implements HTTPRequestInterface {
   requestLine: RequestLine | null;
   state: ParserState;
-  headersManager: HTTPHeaders;
+  private headersManager: HTTPHeaders;
+  headers: typeof this.headersManager.headers;
 
   constructor() {
     this.requestLine = null;
@@ -137,6 +138,22 @@ export class HTTPRequest implements HTTPRequestInterface {
         return 0;
       }
       this.requestLine = parsed.requestLine;
+      this.state = ParserState.PARSING_HEADERS;
+      return parsed.bytesParsed;
+    }
+    if (this.state === ParserState.PARSING_HEADERS) {
+      const parsed = this.headersManager.parseHeaders(stringified);
+      // returns null in case of invalid key
+      if (parsed === null) {
+        return null;
+      }
+
+      // has not encountered the end of headers yet
+      if (!parsed.done) {
+        return parsed.bytesParsed;
+      }
+
+      this.headers = this.headersManager.headers;
       this.state = ParserState.DONE;
       return parsed.bytesParsed;
     }

@@ -19,12 +19,17 @@ export function RequestFromReader(
     if (reader instanceof ChunkReader) {
       let buffer = "";
       let chunk = reader.read();
+      let bytesParsed = 0; // to flush parsed chunk of bytes from memory
 
       // chunkReader returns 0 when all the data is read
       // parser state becomes DONE when the request-line is succesfully parsed
       while (chunk !== 0 && httpRequest.state !== ParserState.DONE) {
-        buffer = buffer + chunk;
-        httpRequest.parse(buffer as string);
+        const updatedBuffer = buffer + chunk;
+        buffer = updatedBuffer.slice(bytesParsed);
+        const receivedBytes = httpRequest.parse(buffer);
+        if (receivedBytes != null) {
+          bytesParsed = receivedBytes;
+        }
         chunk = reader.read();
       }
       resolve(httpRequest.requestLine);
