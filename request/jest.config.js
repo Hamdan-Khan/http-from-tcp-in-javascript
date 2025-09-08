@@ -16,6 +16,7 @@ const config = {
     "^(\\.{1,2}/.*)\\.js$": "$1",
   },
   cache: true,
+  testPathIgnorePatterns: ["/node_modules/", "/dist/"],
 };
 
 export default config;

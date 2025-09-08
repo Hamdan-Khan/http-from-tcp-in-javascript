@@ -1,5 +1,6 @@
 export enum ParserState {
   INITIALIZED = "initialized",
+  PARSING_HEADERS = "parsingHeaders",
   DONE = "done",
 }
 

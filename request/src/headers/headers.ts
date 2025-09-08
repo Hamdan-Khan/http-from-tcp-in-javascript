@@ -1,7 +1,7 @@
 import { ASCII_RANGE, CRLF } from "../constants.js";
 
-export class Headers {
-  public headers: undefined | Record<string, string>;
+export class HTTPHeaders {
+  public headers: Record<string, string> | undefined;
 
   /**
    * For adding key value pair / or just value to an existing key-value pair in headers map
@@ -133,6 +133,8 @@ export class Headers {
     for (let i = 0; i < key.length; i++) {
       const curr = key[i]!;
       const code = curr.charCodeAt(0); // ascii code
+
+      if (curr === " ") continue;
 
       const isLowerCaseAlphabet =
         code >= ASCII_RANGE.lowerStart && code <= ASCII_RANGE.lowerEnd;

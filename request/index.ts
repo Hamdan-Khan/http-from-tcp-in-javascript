@@ -1,4 +1,4 @@
-import { Headers } from "./src/headers/headers.js";
+import { HTTPHeaders } from "./src/headers/headers.js";
 import { ChunkReader } from "./src/utils.js";
 
 async function main() {
@@ -9,7 +9,7 @@ async function main() {
   // const startline = await RequestFromReader(chunkReader);
 
   const testHeader = "Host(: localhost:42069\r\n\r\n";
-  const headers = new Headers();
+  const headers = new HTTPHeaders();
   console.log(headers.parseHeaders(testHeader), headers.headers);
 }
 
