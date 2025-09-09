@@ -13,12 +13,15 @@ export class HTTPRequest implements HTTPRequestInterface {
   requestLine: RequestLine | null;
   state: ParserState;
   private headersManager: HTTPHeaders;
-  headers: typeof this.headersManager.headers;
 
   constructor() {
     this.requestLine = null;
     this.state = ParserState.INITIALIZED;
     this.headersManager = new HTTPHeaders();
+  }
+
+  get headers() {
+    return this.headersManager.headers;
   }
 
   /**
@@ -111,7 +114,7 @@ export class HTTPRequest implements HTTPRequestInterface {
         requestTarget,
         httpVersion,
       },
-      bytesParsed: newLineIndex,
+      bytesParsed: newLineIndex + 2, // e.g. "abc\r\n" -> 3 (newLineIndex) + 2 (newline bytes)
     };
   }
 
@@ -153,9 +156,36 @@ export class HTTPRequest implements HTTPRequestInterface {
         return parsed.bytesParsed;
       }
 
-      this.headers = this.headersManager.headers;
       this.state = ParserState.DONE;
       return parsed.bytesParsed;
     }
+  }
+
+  private bytesParsed = 0; // to flush parsed chunk of bytes from memory
+  private internalBuffer = "";
+
+  /**
+   * stateful function to handle parsing of data received from a stream / socket
+   *
+   *
+   * @param chunk received from stream of data
+   */
+  public handleParsing(chunk: string) {
+    // parser state becomes DONE when the headers are succesfully parsed
+    while (this.state !== ParserState.DONE) {
+      const updatedBuffer = this.internalBuffer + chunk;
+      this.internalBuffer = updatedBuffer.slice(this.bytesParsed);
+      const receivedBytes = this.parse(this.internalBuffer);
+      if (receivedBytes != null) {
+        this.bytesParsed = receivedBytes;
+      }
+    }
+  }
+
+  get parsedRequest() {
+    return {
+      requestLine: this.requestLine,
+      headers: this.headers,
+    };
   }
 }

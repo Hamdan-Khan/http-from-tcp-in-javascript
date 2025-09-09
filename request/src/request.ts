@@ -12,7 +12,7 @@ import { ChunkReader } from "./utils.js";
  */
 export function RequestFromReader(
   reader: Readable | ChunkReader | Socket,
-): Promise<RequestLine | null> {
+): Promise<RequestLine | any | null> {
   return new Promise((resolve) => {
     const httpRequest = new HTTPRequest();
 
@@ -32,14 +32,14 @@ export function RequestFromReader(
         }
         chunk = reader.read();
       }
-      resolve(httpRequest.requestLine);
+      resolve(httpRequest.parsedRequest);
     } else {
       reader.on("data", (chunk) => {
-        httpRequest.parse(chunk);
+        httpRequest.handleParsing(chunk);
       });
 
       reader.on("end", () => {
-        resolve(httpRequest.requestLine);
+        resolve(httpRequest.parsedRequest);
       });
 
       reader.on("error", () => {
