@@ -167,18 +167,24 @@ export class HTTPRequest implements HTTPRequestInterface {
   /**
    * stateful function to handle parsing of data received from a stream / socket
    *
-   *
    * @param chunk received from stream of data
    */
   public handleParsing(chunk: string) {
-    // parser state becomes DONE when the headers are succesfully parsed
-    while (this.state !== ParserState.DONE) {
-      const updatedBuffer = this.internalBuffer + chunk;
-      this.internalBuffer = updatedBuffer.slice(this.bytesParsed);
-      const receivedBytes = this.parse(this.internalBuffer);
-      if (receivedBytes != null) {
-        this.bytesParsed = receivedBytes;
-      }
+    // adds the newly arrived chunk to the buffer
+    const updatedBuffer = this.internalBuffer + chunk;
+
+    // removes the parsed bytes from the buffer (if any)
+    // will only do so, if there was some succesful parsing in the previous call of this function
+    this.internalBuffer = updatedBuffer.slice(this.bytesParsed);
+
+    // parses the data present in the buffer
+    const bytesParsed = this.parse(this.internalBuffer);
+
+    if (bytesParsed != null) {
+      // in non-error cases, its either:
+      // 0 for insufficient data for parsing making sure the memory is not sliced in the next iteration
+      // or a non-zero positive number (length of succesfully parsed chunk): to free the memory from that chunk
+      this.bytesParsed = bytesParsed;
     }
   }
 

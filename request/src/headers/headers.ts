@@ -54,7 +54,7 @@ export class HTTPHeaders {
       // if the headers are empty after trimming white-spaces, it means there are no headers
       // and we've reached the end of field-line. Hence done = true
       if (headerCandidate.trim() === "") {
-        return { done: true, bytesParsed: 0 };
+        return { done: true, bytesParsed: 0 }; // todo: we might need to fix the bytesParsed once we add the body parsing
       }
       return { done: false, bytesParsed: 0 };
     }
