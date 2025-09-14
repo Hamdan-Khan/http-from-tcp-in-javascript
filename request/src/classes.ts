@@ -1,5 +1,5 @@
 import { ASCII_RANGE, CRLF } from "./constants.js";
-import { HTTPHeaders } from "./headers/headers.js";
+import { HTTPHeaders, type ParsedHeadersType } from "./headers/headers.js";
 import {
   ParserState,
   type HTTPRequestInterface,
@@ -7,7 +7,7 @@ import {
 } from "./types.js";
 
 /**
- * Parse HTTP Requests using `.parse()` method
+ * Parse HTTP Requests using `.handleParsing()` method
  */
 export class HTTPRequest implements HTTPRequestInterface {
   requestLine: RequestLine | null;
@@ -119,12 +119,18 @@ export class HTTPRequest implements HTTPRequestInterface {
   }
 
   /**
+   * stateful function which parses provided bytes based on the current state of the parser
+   *
+   * - `INITIALIZED` - tries to parse request-line
+   * - `PARSING_HEADERS` - tries to parse headers (loops for multiple headers)
+   * - `DONE` - request is parsed
    *
    * @param slice slice of message to be parsed
    * @returns  number of bytes parsed = `number` / incomplete data = `0` / error = `null`
    */
-  public parse(slice: string | Buffer) {
+  private parse(slice: string | Buffer) {
     const stringified = slice.toString();
+    let parsedBytes = 0;
     if (this.state === ParserState.DONE) {
       console.error("parse error: trying to read data in a done state");
       return null;
@@ -142,23 +148,30 @@ export class HTTPRequest implements HTTPRequestInterface {
       }
       this.requestLine = parsed.requestLine;
       this.state = ParserState.PARSING_HEADERS;
-      return parsed.bytesParsed;
+      parsedBytes = parsed.bytesParsed;
     }
     if (this.state === ParserState.PARSING_HEADERS) {
-      const parsed = this.headersManager.parseHeaders(stringified);
-      // returns null in case of invalid key
-      if (parsed === null) {
-        return null;
-      }
+      let parsed: ParsedHeadersType | null = null;
+      while (!(parsed && !parsed.done && parsed.bytesParsed === 0)) {
+        parsed = this.headersManager.parseHeaders(
+          stringified.slice(parsedBytes),
+        );
 
-      // has not encountered the end of headers yet
-      if (!parsed.done) {
-        return parsed.bytesParsed;
-      }
+        // returns null in case of invalid key or some other failed condition
+        if (parsed === null) {
+          return null;
+        }
 
-      this.state = ParserState.DONE;
-      return parsed.bytesParsed;
+        parsedBytes += parsed.bytesParsed;
+
+        // has encountered the end of headers
+        if (parsed.done) {
+          this.state = ParserState.DONE;
+          break;
+        }
+      }
     }
+    return parsedBytes;
   }
 
   private bytesParsed = 0; // to flush parsed chunk of bytes from memory

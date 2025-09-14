@@ -1,5 +1,7 @@
 import { ASCII_RANGE, CRLF } from "../constants.js";
 
+export type ParsedHeadersType = { bytesParsed: number; done: boolean };
+
 export class HTTPHeaders {
   public headers: Record<string, string> | undefined;
 
@@ -27,9 +29,7 @@ export class HTTPHeaders {
    *
    * @param data string to derive the headers from
    */
-  public parseHeaders(
-    data: string,
-  ): { bytesParsed: number; done: boolean } | null {
+  public parseHeaders(data: string): null | ParsedHeadersType {
     const endIndex = data.search(CRLF);
 
     // new-line not found yet
@@ -75,7 +75,7 @@ export class HTTPHeaders {
 
     // field-name should not end with a white-space
     if (keyCandidate.endsWith(" ")) {
-      return { done: false, bytesParsed: 0 };
+      return null;
     }
 
     keyCandidate = keyCandidate.trim();
@@ -83,7 +83,7 @@ export class HTTPHeaders {
 
     // fails condition # 3
     if (keyCandidate === "" || valueCandidate === "") {
-      return { done: false, bytesParsed: 0 };
+      return null;
     }
 
     if (!this.headers) {
