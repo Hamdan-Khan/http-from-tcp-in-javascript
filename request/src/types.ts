@@ -1,6 +1,7 @@
 export enum ParserState {
   INITIALIZED = "initialized",
   PARSING_HEADERS = "parsingHeaders",
+  PARSING_BODY = "parsingBody",
   DONE = "done",
 }
 
@@ -18,4 +19,5 @@ export interface RequestLine {
 export interface ParsedRequestInterface {
   requestLine: RequestLine | null;
   headers: Record<string, string> | undefined;
+  body: Buffer;
 }

@@ -14,11 +14,13 @@ export class HTTPRequest implements HTTPRequestInterface {
   requestLine: RequestLine | null;
   state: ParserState;
   private headersManager: HTTPHeaders;
+  public body: Buffer;
 
   constructor() {
     this.requestLine = null;
     this.state = ParserState.INITIALIZED;
     this.headersManager = new HTTPHeaders();
+    this.body = Buffer.from("");
   }
 
   get headers() {
@@ -119,6 +121,15 @@ export class HTTPRequest implements HTTPRequestInterface {
     };
   }
 
+  private get contentLength() {
+    const val = this.headers?.["content-length"];
+    const length = Number(val);
+    if (!val && isNaN(length)) {
+      return null;
+    }
+    return length;
+  }
+
   /**
    * stateful function which parses provided bytes based on the current state of the parser
    *
@@ -131,7 +142,8 @@ export class HTTPRequest implements HTTPRequestInterface {
    */
   private parse(slice: string | Buffer) {
     const stringified = slice.toString();
-    let parsedBytes = 0;
+    let parsedBytes = 0; // local state for counting parsed bytes
+
     if (this.state === ParserState.DONE) {
       console.error("parse error: trying to read data in a done state");
       return null;
@@ -167,9 +179,30 @@ export class HTTPRequest implements HTTPRequestInterface {
 
         // has encountered the end of headers
         if (parsed.done) {
-          this.state = ParserState.DONE;
+          this.state = ParserState.PARSING_BODY;
           break;
         }
+      }
+    }
+    if (this.state === ParserState.PARSING_BODY) {
+      const contentLength = this.contentLength;
+      if (contentLength === null) {
+        // no content-length header means no body is present
+        this.state = ParserState.DONE;
+      } else {
+        const receivedBody = Buffer.from(slice.slice(parsedBytes)); // todo: fix the string | buffer type collision
+
+        this.body = Buffer.concat([this.body, receivedBody]);
+        if (this.body.length > contentLength) {
+          console.error(
+            "Error parsing body: parsed length exceeds the expected content-length",
+          );
+          return null; // todo: improve error throwing in higher level functions
+        }
+        if (this.body.length === contentLength) {
+          this.state = ParserState.DONE;
+        }
+        parsedBytes += receivedBody.length;
       }
     }
     return parsedBytes;
@@ -206,6 +239,7 @@ export class HTTPRequest implements HTTPRequestInterface {
     return {
       requestLine: this.requestLine,
       headers: this.headers,
+      body: this.body,
     };
   }
 }

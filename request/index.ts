@@ -3,7 +3,7 @@ import { ChunkReader } from "./src/utils.js";
 
 async function main() {
   const chunkReader = new ChunkReader(
-    "GET / HTTP/1.1\r\nHost: localhost:42069\r\nUser-Agent: curl/7.81.0\r\nAccept: */*\r\n\r\n",
+    "GET / HTTP/1.1\r\nHost: localhost:42069\r\nUser-Agent: curl/7.81.0\r\nAccept: */*\r\n Content-length: 10\r\n\r\nhey!!!! sup",
     8,
   );
   const request = await RequestFromReader(chunkReader);
