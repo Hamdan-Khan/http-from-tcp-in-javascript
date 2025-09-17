@@ -1,7 +1,7 @@
 import type { Socket } from "net";
 import { Readable } from "stream";
 import { HTTPRequest } from "./classes.js";
-import { type RequestLine } from "./types.js";
+import { type ParsedRequestInterface } from "./types.js";
 import { ChunkReader } from "./utils.js";
 
 /**
@@ -12,7 +12,7 @@ import { ChunkReader } from "./utils.js";
  */
 export function RequestFromReader(
   reader: Readable | ChunkReader | Socket,
-): Promise<RequestLine | any | null> {
+): Promise<ParsedRequestInterface | null> {
   return new Promise((resolve) => {
     const httpRequest = new HTTPRequest();
 

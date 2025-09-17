@@ -45,7 +45,7 @@ describe("Headers parser", () => {
     const headers = new HTTPHeaders();
     const result = headers.parseHeaders("Host : localhost\r\n\r\n");
 
-    expect(result).toEqual({ done: false, bytesParsed: 0 });
+    expect(result).toEqual(null);
     expect(headers.headers).toBeUndefined();
   });
 });

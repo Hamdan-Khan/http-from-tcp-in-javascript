@@ -3,6 +3,7 @@ import { HTTPHeaders, type ParsedHeadersType } from "./headers/headers.js";
 import {
   ParserState,
   type HTTPRequestInterface,
+  type ParsedRequestInterface,
   type RequestLine,
 } from "./types.js";
 
@@ -201,7 +202,7 @@ export class HTTPRequest implements HTTPRequestInterface {
     }
   }
 
-  get parsedRequest() {
+  get parsedRequest(): ParsedRequestInterface {
     return {
       requestLine: this.requestLine,
       headers: this.headers,

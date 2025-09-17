@@ -14,3 +14,8 @@ export interface RequestLine {
   requestTarget: string;
   method: string;
 }
+
+export interface ParsedRequestInterface {
+  requestLine: RequestLine | null;
+  headers: Record<string, string> | undefined;
+}
