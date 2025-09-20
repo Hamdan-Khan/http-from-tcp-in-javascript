@@ -28,9 +28,6 @@ export function RequestFromReader(
     } else {
       reader.on("data", (chunk) => {
         httpRequest.handleParsing(chunk);
-      });
-
-      reader.on("end", () => {
         resolve(httpRequest.parsedRequest);
       });
 

@@ -37,7 +37,7 @@ describe("Headers parser", () => {
     const headers = new HTTPHeaders();
     const result = headers.parseHeaders("\r\n");
 
-    expect(result).toEqual({ done: true, bytesParsed: 0 });
+    expect(result).toEqual({ done: true, bytesParsed: 2 });
     expect(headers.headers).toBeUndefined();
   });
 

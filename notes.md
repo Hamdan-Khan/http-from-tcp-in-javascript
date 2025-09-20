@@ -46,3 +46,7 @@ I'll probably forget all of this
 ## Misc
 
 - `CRLF` = `\r\n`, `CR` moves cursor to the 0th column and `LF` moves it down one row
+
+- `Content-length` header is required in response (otherwise alternatives to be used: `Transfer-Encoding` for chunked data). Sending a response without `Content-Length` would make the client timeout eventually because it won't know when the request ends.
+
+- TCP socket in node js emits `end` event when it closes the connection (probably after receiving the response from us i.e. server). There is no way of knowing the end of an HTTP message from TCP events. We must use `Content-Length` (in case of requests with a body) or a `CRLF` right after the headers, which means there isn't any body to figure out the end of the message.

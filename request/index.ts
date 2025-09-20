@@ -1,15 +1,17 @@
-import { RequestFromReader } from "./src/request.js";
-import { ChunkReader } from "./src/utils.js";
+import { HTTPServer } from "./src/server/server.js";
 
 async function main() {
-  const chunkReader = new ChunkReader(
-    "GET / HTTP/1.1\r\nHost: localhost:42069\r\nUser-Agent: curl/7.81.0\r\nAccept: */*\r\n Content-length: 10\r\n\r\nhey!!!! sup",
-    8,
-  );
-  const request = await RequestFromReader(chunkReader);
-  console.log(request);
+  const server = new HTTPServer();
+  server.serve();
+
+  server.listen(3000, () => {
+    console.log("Server listening at port ", 3000);
+  });
 }
 
 main();
 
 export * from "./src/request.js";
+
+// todo: refactor request package:
+// switch request <-> httpServer
