@@ -15,6 +15,9 @@ export class HTTPServer {
     this.state = HTTPServerState.OPEN;
   }
 
+  /**
+   * initializes the tcp server instance
+   */
   public serve() {
     if (!this.instance) {
       this.instance = createServer(this.handleConnection);
@@ -22,10 +25,20 @@ export class HTTPServer {
     return this.instance;
   }
 
+  /**
+   * binds a port to the server
+   *
+   * @param port - port to be bound
+   * @param callback - to execute after binding
+   */
   public listen(port: number, callback: () => void) {
     this.instance.listen(port, callback);
   }
 
+  /**
+   * handles the incoming data from the connected socket
+   * and sends back a response
+   */
   private async handleConnection(socket: Socket) {
     console.log("Handling connection");
 
