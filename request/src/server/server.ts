@@ -1,5 +1,6 @@
 import { createServer, Server, Socket } from "net";
 import { RequestFromReader } from "../request.js";
+import { HTTPResponse } from "../response/response.js";
 
 enum HTTPServerState {
   CLOSED = "closed",
@@ -45,8 +46,18 @@ export class HTTPServer {
     const request = await RequestFromReader(socket);
     console.log("succesfully parsed: ", request);
 
-    const hardCopiedRes = `HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: 0\r\n\r\n`;
-    socket.write(hardCopiedRes);
+    const HttpRes = new HTTPResponse();
+
+    const statusLine = HttpRes.writeStatusLine(
+      HTTPResponse.StatusCode.CODE_200,
+    );
+    const hardCodedBody = "hard coded body!!!!";
+    HttpRes.getDefaultHeaders(hardCodedBody.length);
+    const headers = HttpRes.writeHeaders();
+
+    const response = statusLine + headers + hardCodedBody;
+
+    socket.write(response);
 
     socket.on("end", () => {
       console.log("Connection handled");

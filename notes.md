@@ -11,6 +11,18 @@ CRLF
 [ message-body ]
 ```
 
+request-line (for requests):
+
+```
+request-line = <method> <space> <target> <space> <http-version>
+```
+
+status-line (for responses):
+
+```
+status-line = <http-version> <space> <status-code> <space> <reason-phrase>
+```
+
 ### Headers
 
 Headers / field-line must follow this format:
