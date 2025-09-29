@@ -1,27 +1,41 @@
 import { createServer, Server, Socket } from "net";
 import { RequestFromReader } from "../request.js";
 import { HTTPResponse } from "../response/response.js";
+import type { ParsedRequestInterface } from "../types.js";
 
 enum HTTPServerState {
   CLOSED = "closed",
   OPEN = "open",
 }
 
+export interface HandlerError {
+  statusCode: number;
+  message: string;
+}
+
+export type RequestHandlerType = (
+  request: ParsedRequestInterface,
+) => HandlerError | string;
+
 export class HTTPServer {
-  private instance: Server;
+  private instance!: Server;
   private state: HTTPServerState;
+  private handler!: RequestHandlerType;
 
   constructor() {
-    this.instance = this.serve();
     this.state = HTTPServerState.OPEN;
   }
 
   /**
    * initializes the tcp server instance
    */
-  public serve() {
+  public serve(handler: RequestHandlerType) {
     if (!this.instance) {
-      this.instance = createServer(this.handleConnection);
+      console.log("Creating a server instance!");
+      this.instance = createServer(this.handleConnection.bind(this));
+    }
+    if (handler) {
+      this.handler = handler;
     }
     return this.instance;
   }
@@ -44,18 +58,32 @@ export class HTTPServer {
     console.log("Handling connection");
 
     const request = await RequestFromReader(socket);
+    if (!request) {
+      console.log("Couldn't parse request");
+      return;
+    }
     console.log("succesfully parsed: ", request);
 
     const HttpRes = new HTTPResponse();
 
-    const statusLine = HttpRes.writeStatusLine(
-      HTTPResponse.StatusCode.CODE_200,
-    );
-    const hardCodedBody = "hard coded body!!!!";
-    HttpRes.getDefaultHeaders(hardCodedBody.length);
+    const handlerError = this.handler(request);
+    let statusCode;
+    let message;
+    // error when its an object, when its a string it has succeeded
+    if (typeof handlerError === "object") {
+      statusCode = handlerError.statusCode;
+      message = handlerError.message;
+    } else {
+      statusCode = 200;
+      message = handlerError;
+    }
+
+    const statusLine = HttpRes.writeStatusLine(statusCode);
+
+    HttpRes.getDefaultHeaders(message.length);
     const headers = HttpRes.writeHeaders();
 
-    const response = statusLine + headers + hardCodedBody;
+    const response = statusLine + headers + message;
 
     socket.write(response);
 
