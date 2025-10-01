@@ -7,10 +7,13 @@ enum DefaultHeaders {
 }
 
 export class HTTPResponse {
-  public headers: Record<string, string>;
+  private localHeaders: Record<string, string> = {};
+  private headers: string = "";
+  private body: string = "";
+  private statusLine: string = "";
 
   constructor() {
-    this.headers = {};
+    this.localHeaders = this.getDefaultHeaders();
   }
 
   public static readonly StatusCode = {
@@ -26,23 +29,47 @@ export class HTTPResponse {
   };
 
   public writeStatusLine(code: number) {
-    let statusLine = `HTTP/${HTTP_VERSION} ${code} `; //
+    let localStatusLine = `HTTP/${HTTP_VERSION} ${code} `;
     const correspondingPhrase = this.statusCodeReasonMap[code] ?? "";
-
-    statusLine += correspondingPhrase + CRLF;
-    return statusLine;
+    localStatusLine += correspondingPhrase + CRLF;
+    this.statusLine = localStatusLine;
   }
 
-  public getDefaultHeaders(contentLength: number) {
-    // setting few default headers
-    this.headers[DefaultHeaders.ContentLength] = contentLength.toString();
-    this.headers[DefaultHeaders.ContentType] = "text/plain";
-    this.headers[DefaultHeaders.Connection] = "close";
+  /**
+   * sets few default headers
+   */
+  private getDefaultHeaders() {
+    return {
+      [DefaultHeaders.ContentType]: "text/plain",
+      [DefaultHeaders.Connection]: "close",
+    };
   }
 
-  public writeHeaders() {
-    const entries = Object.entries(this.headers);
+  /**
+   * adds header to the response message.
+   * calling this function more than once with new headers will append the new headers
+   */
+  public writeHeaders(headers?: Record<string, string>) {
+    if (headers) {
+      Object.entries(headers).forEach(([k, v]) => {
+        this.localHeaders[k] = v;
+      });
+    }
+    const entries = Object.entries(this.localHeaders);
     const mapped = entries.map(([k, v]) => `${k}: ${v}${CRLF}`);
-    return mapped.join("") + CRLF;
+    this.headers = mapped.join("") + CRLF;
+  }
+
+  public writeBody(body: string) {
+    this.body = body;
+    // write the content-length header right after adding the body
+    const contentLengthHeader = {
+      [DefaultHeaders.ContentLength]: body.length.toString(),
+    };
+    this.writeHeaders(contentLengthHeader);
+  }
+
+  public get formattedResponse(): string {
+    return this.statusLine + this.headers + this.body;
   }
 }
