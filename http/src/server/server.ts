@@ -1,5 +1,5 @@
 import { createServer, Server, Socket } from "net";
-import { RequestFromReader } from "../request.js";
+import { RequestFromReader } from "../request/request.js";
 import { HTTPResponse } from "../response/response.js";
 import type { ParsedRequestInterface } from "../types.js";
 

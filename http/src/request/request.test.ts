@@ -1,6 +1,6 @@
 import { Readable } from "stream";
+import { ChunkReader } from "../utils/chunkReader.js";
 import { RequestFromReader } from "./request.js";
-import { ChunkReader } from "./utils.js";
 
 describe("Request Line Parser Tests", () => {
   describe("Readable stream Tests", () => {

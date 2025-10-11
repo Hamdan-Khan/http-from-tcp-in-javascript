@@ -1,11 +1,11 @@
-import { ASCII_RANGE, CRLF } from "./constants.js";
-import { HTTPHeaders, type ParsedHeadersType } from "./headers/headers.js";
+import { ASCII_RANGE, CRLF } from "../constants.js";
+import { HTTPHeaders, type ParsedHeadersType } from "../headers/headers.js";
 import {
   ParserState,
   type HTTPRequestInterface,
   type ParsedRequestInterface,
   type RequestLine,
-} from "./types.js";
+} from "../types.js";
 
 /**
  * Parse HTTP Requests using `.handleParsing()` method

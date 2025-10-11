@@ -60,7 +60,4 @@ async function main() {
 
 main();
 
-export * from "./src/request.js";
-
-// todo: refactor request package:
-// switch request <-> httpServer
+export * from "./src/request/request.js";

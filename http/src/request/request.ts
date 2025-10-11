@@ -1,8 +1,8 @@
 import type { Socket } from "net";
 import { Readable } from "stream";
-import { HTTPRequest } from "./classes.js";
-import { type ParsedRequestInterface } from "./types.js";
-import { ChunkReader } from "./utils.js";
+import { type ParsedRequestInterface } from "../types.js";
+import { ChunkReader } from "../utils/chunkReader.js";
+import { HTTPRequest } from "./request.class.js";
 
 /**
  * To form a parsed request object from a readable source

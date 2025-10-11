@@ -1,9 +1,10 @@
 /**
  * A udp sender to demonstrate the connection-less property of udp
  * to listen for UDP Packets in powershell (with nmap):
- * "C:\Program Files (x86)\Nmap\ncat.exe" -u -l 42069
  *
- * when the listener node (ncat) is closed, the packets can still be sent
+ * > nc -u -l 42069
+ *
+ * when the listener node (nc) is closed, the packets can still be sent
  * from this node, regardless of the listener's availability
  */
 import { createSocket } from "dgram";
@@ -21,9 +22,9 @@ const rl = createInterface({
 rl.setPrompt("> ");
 rl.prompt();
 
-// on every new line, send it to the associated udp listener
+// on every new line, send it to the udp listener (nc)
 rl.on("line", (line) => {
-  server.send(Buffer.from(line));
+  server.send(Buffer.from(line + "\r\n"));
   rl.prompt();
 });
 

@@ -1,15 +1,19 @@
 /**
  * demonstration of connection-oriented property of tcp
  * for establishing a tcp connection to this listener node:
- * > telnet localhost 42069
+ *
+ * spin this server up:
+ * > node tcp-listener.js
+ *
+ * connect to it using:
+ * > nc localhost 42069
  *
  * when the listener node (this node) is closed, the sender node (telnet)
  * is terminated as well, i.e. connection is necessary for sending packets
  */
-
 import EventEmitter from "events";
 import { createServer } from "net";
-import { RequestFromReader } from "./request/dist/index.js";
+import { RequestFromReader } from "./http/dist/index.js";
 
 /**
  * converts stream of bytes from the tcp sender into formatted lines
@@ -68,10 +72,11 @@ async function simpleTcpChannel() {
 }
 
 /**
- * a tcp listener, that parses the request-line when a request is received
- * e.g. curl http://localhost:42069/its/over
+ * a test usage of the http server lib
+ *
+ * `curl http://localhost:42069/its/over`
  */
-async function requestLineParser() {
+async function testServer() {
   const server = createServer(async (socket) => {
     console.log("connection opened");
 
@@ -90,7 +95,8 @@ async function requestLineParser() {
 }
 
 function main() {
-  requestLineParser();
+  simpleTcpChannel();
+  // testServer();
 }
 
 main();
