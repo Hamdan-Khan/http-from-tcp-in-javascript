@@ -27,6 +27,8 @@ server.listen(3000, () => {
 
 Check [this file](/http/index.ts) for a more detailed implementation.
 
+To use the server package outside of the `http` directory, make sure to run `pnpm build`
+
 ## Chunked Streaming
 
 A cute little implementation of a chunked streaming proxy for large responses can also be found in [this file](/http/index.ts).
