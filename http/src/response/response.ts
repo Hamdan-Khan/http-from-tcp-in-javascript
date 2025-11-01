@@ -69,6 +69,11 @@ export class HTTPResponse {
     this.writeHeaders(contentLengthHeader);
   }
 
+  /**
+   *
+   */
+  public writeChunkedBody(chunk: string) {}
+
   public get formattedResponse(): string {
     return this.statusLine + this.headers + this.body;
   }

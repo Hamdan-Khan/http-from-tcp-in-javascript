@@ -1,3 +1,4 @@
+import http from "http";
 import { HTTPResponse } from "./src/response/response.js";
 import { HTTPServer } from "./src/server/server.js";
 import type { ParsedRequestInterface } from "./src/types.js";
@@ -5,6 +6,37 @@ import type { ParsedRequestInterface } from "./src/types.js";
 async function main() {
   const server = new HTTPServer();
   function handler(request: ParsedRequestInterface): HTTPResponse {
+    // proxy handler for chunked streaming
+    if (
+      request.requestLine?.requestTarget.startsWith("/httpbin") &&
+      request.requestLine?.requestTarget.split("/")[1] === "httpbin"
+    ) {
+      console.log("HERE ---------------");
+
+      const proxy = http.request(
+        {
+          hostname: `httpbin.org`,
+          port: 80,
+          path: `stream/${request.requestLine?.requestTarget.split("/")[2]}`,
+          method: "GET",
+        },
+        (res) => {
+          res.on("data", (chunk) => {
+            console.log(`BODY: ${chunk} ${chunk.length}`);
+          });
+        },
+      );
+
+      proxy.on("error", (err) => {
+        console.log(err);
+      });
+
+      proxy.end();
+
+      const res = new HTTPResponse();
+      res.writeHeaders({ "Transfer-Encoding": "chunked" });
+      return res;
+    }
     if (request.requestLine?.requestTarget === "/yourproblem") {
       const res = new HTTPResponse();
       res.writeHeaders({ testHeader: "123", "Content-Type": "text/html" });
