@@ -1,11 +1,11 @@
-## HTTP from TCP in javascript
+# HTTP from TCP in javascript
 
 A low-level implementation of HTTP server from scratch in node js using `net` for TCP sockets.
 
 It is a functional HTTP/1.1 server including: HTTP request parser, response formatter, some standard headers / response codes etc.
 Though it might lack some niche standard stuff, but it works :)
 
-### Basic working
+## Basic working
 
 Base class is `HTTPServer`. Response can be created using `HTTPResponse` class.
 
@@ -27,7 +27,7 @@ server.listen(3000, () => {
 
 Check [this file](/http/index.ts) for a more detailed implementation.
 
-### Chunked Streaming
+## Chunked Streaming
 
 A cute little implementation of a chunked streaming proxy for large responses can also be found in [this file](/http/index.ts).
 
@@ -35,7 +35,7 @@ Pretty much: setting the `Transfer-encoding` header to `chunked` and using the `
 
 You can hit the `/httpbin/[n]` endpoint to stream `n` amount of chunks from httpbin.org
 
-### might add later
+## might add later
 
 - load balancing stuff
 - trailers (hashing, content-length, etc.) in chunked encoding
