@@ -14,8 +14,9 @@ export interface HandlerError {
 }
 
 export type RequestHandlerType = (
+  socket: Socket,
   request: ParsedRequestInterface,
-) => HTTPResponse;
+) => HTTPResponse | 0;
 
 export class HTTPServer {
   private instance!: Server;
@@ -64,12 +65,14 @@ export class HTTPServer {
     }
     console.log("succesfully parsed: ", request);
 
-    const handlerError = this.handler(request);
+    const handledRequest = this.handler(socket, request);
 
-    const response = handlerError.formattedResponse;
-
-    socket.write(response);
-
+    // 0 -> the request handler has already handled writing to the socket
+    // used in case of streaming requests
+    if (handledRequest !== 0) {
+      const response = handledRequest.formattedResponse;
+      socket.write(response);
+    }
     socket.on("end", () => {
       console.log("Connection handled");
     });

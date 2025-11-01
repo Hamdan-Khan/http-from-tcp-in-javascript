@@ -1,3 +1,4 @@
+import type { Socket } from "net";
 import { CRLF, HTTP_VERSION } from "../constants.js";
 
 enum DefaultHeaders {
@@ -70,9 +71,17 @@ export class HTTPResponse {
   }
 
   /**
+   * writes streamed chunk directly to the connected socket
    *
+   * (don't want to store it in the HTTPResponse.body buffer, we need to write it as soon as its received)
    */
-  public writeChunkedBody(chunk: string) {}
+  public writeChunkedBody(socket: Socket, chunk: string) {
+    const chunkLength = chunk.length.toString(16); // get length in hexadecimal num system
+    console.log(`Chunk received of ${chunkLength} bytes`);
+    socket.write(chunkLength + CRLF);
+    socket.write(chunk);
+    socket.write(CRLF);
+  }
 
   public get formattedResponse(): string {
     return this.statusLine + this.headers + this.body;

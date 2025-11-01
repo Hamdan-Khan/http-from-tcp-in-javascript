@@ -1,31 +1,46 @@
 import http from "http";
+import type { Socket } from "net";
+import { CRLF } from "./src/constants.js";
 import { HTTPResponse } from "./src/response/response.js";
 import { HTTPServer } from "./src/server/server.js";
 import type { ParsedRequestInterface } from "./src/types.js";
 
 async function main() {
   const server = new HTTPServer();
-  function handler(request: ParsedRequestInterface): HTTPResponse {
+  function handler(
+    socket: Socket, // to be used in streaming responses only
+    request: ParsedRequestInterface,
+  ): HTTPResponse | 0 {
     // proxy handler for chunked streaming
     if (
       request.requestLine?.requestTarget.startsWith("/httpbin") &&
       request.requestLine?.requestTarget.split("/")[1] === "httpbin"
     ) {
-      console.log("HERE ---------------");
+      const res = new HTTPResponse();
+      res.writeHeaders({ "Transfer-Encoding": "chunked" });
+      res.writeStatusLine(200);
+      const firstChunk = res.formattedResponse;
+      socket.write(firstChunk);
 
-      const proxy = http.request(
-        {
-          hostname: `httpbin.org`,
-          port: 80,
-          path: `stream/${request.requestLine?.requestTarget.split("/")[2]}`,
-          method: "GET",
-        },
-        (res) => {
-          res.on("data", (chunk) => {
-            console.log(`BODY: ${chunk} ${chunk.length}`);
-          });
-        },
-      );
+      const options = {
+        hostname: `httpbin.org`,
+        port: 80,
+        path: `/stream/${
+          request.requestLine?.requestTarget.split("/")[2] ?? 1
+        }`,
+        method: "GET",
+      };
+
+      const proxy = http.request(options, (response) => {
+        response.on("data", (chunk) => {
+          res.writeChunkedBody(socket, chunk);
+        });
+
+        response.on("end", () => {
+          socket.write("0" + CRLF + CRLF);
+          socket.end();
+        });
+      });
 
       proxy.on("error", (err) => {
         console.log(err);
@@ -33,9 +48,7 @@ async function main() {
 
       proxy.end();
 
-      const res = new HTTPResponse();
-      res.writeHeaders({ "Transfer-Encoding": "chunked" });
-      return res;
+      return 0; // to distinguish between normal and chunked responses
     }
     if (request.requestLine?.requestTarget === "/yourproblem") {
       const res = new HTTPResponse();

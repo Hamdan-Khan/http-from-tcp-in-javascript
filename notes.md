@@ -55,10 +55,46 @@ I'll probably forget all of this
 
 - A 400 (Bad request) response to be sent if a request does not strictly follow the HTTP-Message format
 
+### Chunked Encoding
+
+Header used in response: `Transfer-encoding: chunked`
+
+Pretty much: to send data of unknown size by creating smaller chunks of known size, each with its own size indicator.
+
+```
+start-line CRLF
+*( field-line CRLF)
+CRLF
+<x>CRLF
+<data of length x>CRLF
+<x>CRLF
+<data of length x>CRLF
+<x>CRLF
+<data of length x>CRLF
+....
+0 CRLF
+CRLF
+```
+
+The pattern for sending data is: data-length followed by a CRLF, and data.
+
+To indicate the end of the data, a 0 followed by a CRLF. And another CRLF for completion of body
+
+```
+10\r\n
+<data of length 10 (hex to dec = 16) bytes>
+0\r\n
+\r\n
+```
+
+- Why are http headers asynchronous?
+
+  Due to `trailers` that are at the end of the chunked encoding.
+
 ## Misc
 
 - `CRLF` = `\r\n`, `CR` moves cursor to the 0th column and `LF` moves it down one row
 
 - `Content-length` header is required in response (otherwise alternatives to be used: `Transfer-Encoding` for chunked data). Sending a response without `Content-Length` would make the client timeout eventually because it won't know when the request ends.
 
-- TCP socket in node js emits `end` event when it closes the connection (probably after receiving the response from us i.e. server). There is no way of knowing the end of an HTTP message from TCP events. We must use `Content-Length` (in case of requests with a body) or a `CRLF` right after the headers, which means there isn't any body to figure out the end of the message.
+- TCP socket in node js emits `end` event when it closes the connection (probably after receiving the response from the server). There is no way of knowing the end of an HTTP message from TCP events. We must use `Content-Length` (in case of requests with a body) or a `CRLF` right after the headers (which means there isn't any body) to figure out the end of the message.
