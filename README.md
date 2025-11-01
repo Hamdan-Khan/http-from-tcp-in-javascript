@@ -1,15 +1,42 @@
 ## HTTP from TCP in javascript
 
-low-level implementation of HTTP server from scratch
+A low-level implementation of HTTP server from scratch in node js using `net` for TCP sockets.
 
-WIP!
+It is a functional HTTP/1.1 server including: HTTP request parser, response formatter, some standard headers / response codes etc.
+Though it might lack some niche standard stuff, but it works :)
 
-### Flow of execution:
+### Basic working
 
-- `RequestFromReader(reader)` where `reader` can be a readable stream or socket
-- The stream is listened for data `chunks`
-- `HTTPRequest` instance handles the parsing of chunks through `handleParsing(chunk)` method.
-- The `handleParsing` method
-  - keeps incomplete stuff in memory using `internalBuffer` var.
-  - uses `parse(slice)` to handle actual parsing logic. The state of parser (`done`, `initialized`, etc.) is also maintained in `parse(slice)`.
-  - keeps track of the length of parsed bytes using `bytesParsed` var. This way it clears the parsed bytes from memory as soon as they're parsed.
+Base class is `HTTPServer`. Response can be created using `HTTPResponse` class.
+
+You can decide what to do with the incoming requests in the `handler` function. It should return instance of `HTTPRespone`, which is then written to the connected socket.
+
+```js
+const server = new HTTPServer();
+
+function handle(socket, request) {
+  // handle request / define routes / create proxy / etc.
+}
+
+server.serve(handler);
+
+server.listen(3000, () => {
+  console.log("Server listening at port ", 3000);
+});
+```
+
+Check [this file](/http/index.ts) for a more detailed implementation.
+
+### Chunked Streaming
+
+A cute little implementation of a chunked streaming proxy for large responses can also be found in [this file](/http/index.ts).
+
+Pretty much: setting the `Transfer-encoding` header to `chunked` and using the `writeChunkedBody()` method of response class enables sending chunked data.
+
+You can hit the `/httpbin/[n]` endpoint to stream `n` amount of chunks from httpbin.org
+
+### might add later
+
+- load balancing stuff
+- trailers (hashing, content-length, etc.) in chunked encoding
+- handling binary data (images, vids, etc.)

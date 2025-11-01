@@ -98,3 +98,13 @@ To indicate the end of the data, a 0 followed by a CRLF. And another CRLF for co
 - `Content-length` header is required in response (otherwise alternatives to be used: `Transfer-Encoding` for chunked data). Sending a response without `Content-Length` would make the client timeout eventually because it won't know when the request ends.
 
 - TCP socket in node js emits `end` event when it closes the connection (probably after receiving the response from the server). There is no way of knowing the end of an HTTP message from TCP events. We must use `Content-Length` (in case of requests with a body) or a `CRLF` right after the headers (which means there isn't any body) to figure out the end of the message.
+
+## Flow of execution:
+
+- `RequestFromReader(reader)` where `reader` can be a readable stream or socket
+- The stream is listened for data `chunks`
+- `HTTPRequest` instance handles the parsing of chunks through `handleParsing(chunk)` method.
+- The `handleParsing` method
+  - keeps incomplete stuff in memory using `internalBuffer` var.
+  - uses `parse(slice)` to handle actual parsing logic. The state of parser (`done`, `initialized`, etc.) is also maintained in `parse(slice)`.
+  - keeps track of the length of parsed bytes using `bytesParsed` var. This way it clears the parsed bytes from memory as soon as they're parsed.

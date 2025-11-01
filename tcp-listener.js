@@ -8,9 +8,10 @@
  * connect to it using:
  * > nc localhost 42069
  *
- * when the listener node (this node) is closed, the sender node (telnet)
+ * when the listener node (this node) is closed, the sender node (nc)
  * is terminated as well, i.e. connection is necessary for sending packets
  */
+
 import EventEmitter from "events";
 import { createServer } from "net";
 import { RequestFromReader } from "./http/dist/index.js";

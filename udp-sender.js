@@ -1,17 +1,23 @@
 /**
  * A udp sender to demonstrate the connection-less property of udp
- * to listen for UDP Packets in powershell (with nmap):
+ * to listen for UDP Packets (with nc):
  *
+ * spin this server up:
+ * > node udp-sender.js
+ *
+ * listen to this server
  * > nc -u -l 42069
+ *
+ * type anything in the terminal and press Enter
  *
  * when the listener node (nc) is closed, the packets can still be sent
  * from this node, regardless of the listener's availability
  */
+
 import { createSocket } from "dgram";
 import { createInterface } from "readline";
 
 const server = createSocket("udp4");
-server.connect(42069, "127.0.0.1");
 
 // to create an infinite stream of input from stdin
 const rl = createInterface({
@@ -24,7 +30,7 @@ rl.prompt();
 
 // on every new line, send it to the udp listener (nc)
 rl.on("line", (line) => {
-  server.send(Buffer.from(line + "\r\n"));
+  server.send(Buffer.from(line + "\r\n"), 42069, "127.0.0.1");
   rl.prompt();
 });
 
